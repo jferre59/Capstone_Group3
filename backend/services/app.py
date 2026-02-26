@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify
 import os
 import numpy as np
@@ -74,6 +75,16 @@ cols_2 = ['age', 'symptom_symptom_token_a cough that lasts more than three weeks
 
 app = Flask(__name__) #Create instance of flask app
 
+# TESTING CODE
+# REASON: Adding a root path ('/') to confirm the server is running without getting a 404 error.
+@app.route('/')
+def health_check():
+    return jsonify({
+        "status": "online",
+        "message": "Model API is running. Use /predict for POST requests."
+    }), 200
+# END OF TESTING CODE
+
 @app.route('/predict', methods=['POST']) #Declare post route called predict to predict the data
 def add_item():
     #Get JSON data from the request body
@@ -111,4 +122,4 @@ def add_item():
 
 
 if __name__ == '__main__': #Launch the flask api with debugging set to true
-    app.run(debug=True)
+    app.run(debug=True, use_reloader=False)
