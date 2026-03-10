@@ -2,8 +2,7 @@
 print("Importing libraries...")
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
-from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
@@ -187,6 +186,12 @@ class Preprocessor:
 
         df_normalized = df.copy()
         df_normalized[feature_cols] = self.scaler.fit_transform(df_normalized[feature_cols])
+        
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        backend_dir = os.path.dirname(script_dir)
+        output_model = os.path.join(backend_dir, 'model', 'scaler.joblib')
+        os.makedirs(os.path.dirname(output_model), exist_ok=True)
+        joblib.dump(self.scaler, output_model)
 
         print("Numerical features normalized.")
 
@@ -295,7 +300,6 @@ if __name__ == "__main__":
     print(f"Number of features: {len(feature_cols)}")
     print(f"Feature names: {feature_cols[:10]}...")  # Show first 10
     print(f"Target distribution:\n{y.value_counts()}")
-
     # REFACTORED: Train/evaluate tuned RandomForest that reproduced realistic ~94.16% accuracy after leakage removal.
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
@@ -342,7 +346,7 @@ if __name__ == "__main__":
     print("Preprocessor object saved successfully.")
 
     # IMPROVEMENT: Save tuned model artifact separately for safe testing.
-    output_model = os.path.join(backend_dir, 'model', 'trained_model_v2_test.joblib')
+    output_model = os.path.join(backend_dir, 'model', 'trained_model_v2_illness.joblib')
     os.makedirs(os.path.dirname(output_model), exist_ok=True)
     joblib.dump(rf_model, output_model)
     print("Tuned model saved successfully.")
