@@ -298,7 +298,7 @@ if __name__ == "__main__":
     print(f"\nFeatures shape: {X.shape}")
     print(f"Target shape: {y.shape}")
     print(f"Number of features: {len(feature_cols)}")
-    print(f"Feature names: {feature_cols[:10]}...")  # Show first 10
+    print(f"Feature names: {feature_cols}...")  # Show first 10
     print(f"Target distribution:\n{y.value_counts()}")
     # REFACTORED: Train/evaluate tuned RandomForest that reproduced realistic ~94.16% accuracy after leakage removal.
     X_train, X_test, y_train, y_test = train_test_split(
