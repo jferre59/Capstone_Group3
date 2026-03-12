@@ -308,7 +308,7 @@ if __name__ == "__main__":
     # IMPROVEMENT: Model parameters provided for the high-performing refactor run.
     rf_model = RandomForestClassifier(
         n_estimators=700,
-        max_depth=30,
+        max_depth=35,
         min_samples_split=2,
         min_samples_leaf=1,
         max_features='sqrt',
@@ -326,7 +326,8 @@ if __name__ == "__main__":
     print(f"Precision: {precision_score(y_test, y_pred, average='weighted', zero_division=0):.4f}")
     print(f"Recall   : {recall_score(y_test, y_pred, average='weighted', zero_division=0):.4f}")
     print(f"F1-score : {f1_score(y_test, y_pred, average='weighted', zero_division=0):.4f}")
-
+    print(f"Training Accuracy: {rf_model.score(X_train, y_train):.4f}")
+    
     #Saving processed data
     print("\nSaving processed data...")
     output_csv = os.path.join(data_processed_dir, 'respiratory_processed.csv')
