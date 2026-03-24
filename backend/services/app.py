@@ -14,6 +14,18 @@ loaded_model = joblib.load('backend/model/trained_model_v2_illness.joblib')
 
 loaded_model_2 = joblib.load('backend/model/trained_model_v2_treat.joblib')
 
+REQUIRED_FIELDS = [
+    'age',
+    'symptom_1',
+    'symptom_2',
+    'symptom_3',
+    'sex',
+    'nature',
+    'age_group',
+    'symptom_count',
+    'high_risk',
+]
+
 #Python dictionary to hold key value pairs for the reponse sent to the client currently empy defaults, acts as in memory storage holding the last results
 res = {"Illness": "",
        "Treatment": ""}
@@ -75,6 +87,53 @@ cols_2 = ['age', 'symptom_symptom_token_a cough that lasts more than three weeks
 
 app = Flask(__name__) #Create instance of flask app
 
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, OPTIONS'
+    return response
+
+
+def validate_predict_payload(data):
+    missing_fields = [field for field in REQUIRED_FIELDS if field not in data]
+    if missing_fields:
+        return f"Missing required field(s): {', '.join(missing_fields)}"
+
+    try:
+        age = float(data['age'])
+        symptom_count = int(data['symptom_count'])
+    except (TypeError, ValueError):
+        return "Age and symptom_count must be numeric values."
+
+    if age < 0:
+        return "Age must be zero or greater."
+
+    if symptom_count < 0 or symptom_count > 3:
+        return "symptom_count must be between 0 and 3."
+
+    symptom_fields = ['symptom_1', 'symptom_2', 'symptom_3']
+    valid_symptoms = set(data_process.symptoms)
+    for field in symptom_fields:
+        value = data[field]
+        if value != 'NONE' and value not in valid_symptoms:
+            return f"Invalid value for {field}: {value}"
+
+    if data['sex'] not in data_process.gender:
+        return f"Invalid value for sex: {data['sex']}"
+
+    if data['nature'] not in data_process.nature:
+        return f"Invalid value for nature: {data['nature']}"
+
+    if data['age_group'] not in data_process.age_gp:
+        return f"Invalid value for age_group: {data['age_group']}"
+
+    if data['high_risk'] not in ('yes', 'no'):
+        return f"Invalid value for high_risk: {data['high_risk']}"
+
+    return None
+
 # TESTING CODE
 # REASON: Adding a root path ('/') to confirm the server is running without getting a 404 error.
 @app.route('/')
@@ -85,16 +144,31 @@ def health_check():
     }), 200
 # END OF TESTING CODE
 
-@app.route('/predict', methods=['POST']) #Declare post route called predict to predict the data
+@app.route('/predict', methods=['POST', 'OPTIONS']) #Declare post route called predict to predict the data
 def add_item():
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+
     #Get JSON data from the request body
     data = request.get_json()
-    if data is None:
+    if not isinstance(data, dict):
         return jsonify({"error": "Invalid JSON"}), 400
 
-    value_list = list(data.values()) 
-    if len(value_list) != 9:
-        return jsonify({"error": "Missing Fields"}), 400
+    validation_error = validate_predict_payload(data)
+    if validation_error:
+        return jsonify({"error": validation_error}), 400
+
+    value_list = [
+        float(data['age']),
+        data['symptom_1'],
+        data['symptom_2'],
+        data['symptom_3'],
+        data['sex'],
+        data['nature'],
+        data['age_group'],
+        int(data['symptom_count']),
+        data['high_risk'],
+    ]
     
     numeric_values = data_process.data_processing(value_list) #Converts human readable string information into numeric data the model expects
         
@@ -115,7 +189,7 @@ def add_item():
 
         res = {"Illness": prediction[0],
        "Treatment": prediction_2[0]}
-        return jsonify(res), 201
+        return jsonify(res), 200
     except Exception as e:
         return jsonify({"Error": str(e)}), 500
     

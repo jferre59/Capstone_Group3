@@ -1,69 +1,98 @@
-﻿import { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Activity, LoaderCircle } from 'lucide-react';
+import {
+  buildPredictionPayload,
+  natureOptions,
+  predictCondition,
+  sexOptions,
+  symptomOptions,
+} from '../../lib/prediction';
 
-const symptomOptions = [
-  'Cough',
-  'Fever',
-  'Shortness of breath',
-  'Chest pain',
-  'Wheezing',
+const REPORT_STORAGE_KEY = 'latest-patient-report';
+
+const symptomFieldConfig = [
+  { id: 'symptom_1', label: 'Primary symptom' },
+  { id: 'symptom_2', label: 'Secondary symptom' },
+  { id: 'symptom_3', label: 'Additional symptom' },
 ];
 
 export function PatientInputPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ age: '', sex: '', symptoms: [] });
+  const [form, setForm] = useState({
+    age: '',
+    sex: '',
+    nature: 'unknown',
+    symptom_1: 'NONE',
+    symptom_2: 'NONE',
+    symptom_3: 'NONE',
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const payloadPreview = useMemo(() => buildPredictionPayload(form), [form]);
+
   const canSubmit = useMemo(() => {
-    return form.age !== '' && form.sex !== '' && form.symptoms.length > 0;
-  }, [form]);
+    const age = Number(form.age);
 
-  const onSymptomToggle = (symptom) => {
-    setForm((prev) => {
-      const exists = prev.symptoms.includes(symptom);
-      return {
-        ...prev,
-        symptoms: exists
-          ? prev.symptoms.filter((item) => item !== symptom)
-          : [...prev.symptoms, symptom],
-      };
-    });
+    return (
+      form.age !== '' &&
+      !Number.isNaN(age) &&
+      age >= 0 &&
+      form.sex !== '' &&
+      form.nature !== '' &&
+      payloadPreview.symptom_count > 0
+    );
+  }, [form, payloadPreview.symptom_count]);
 
+  const updateField = (field, value) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
     if (error) {
       setError('');
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!canSubmit) {
-      setError('Please fill in all fields.');
+      setError('Enter age, sex, nature, and choose at least one symptom.');
       return;
     }
 
-    setError('');
     setLoading(true);
+    setError('');
 
-    // TODO: Replace setTimeout with fetch POST to /api/predict using 'form' payload.
-    setTimeout(() => {
+    try {
+      const prediction = await predictCondition(form);
+      const reportState = {
+        intake: form,
+        prediction,
+        savedAt: new Date().toISOString(),
+      };
+
+      window.sessionStorage.setItem(REPORT_STORAGE_KEY, JSON.stringify(reportState));
+
+      navigate('/patient/report', {
+        state: reportState,
+      });
+    } catch (requestError) {
+      setError(requestError.message || 'Unable to connect to the prediction service.');
+    } finally {
       setLoading(false);
-      navigate('/patient/report', { state: { intake: form } });
-    }, 1600);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-cyan-50 via-slate-50 to-white px-4 py-10">
-      <div className="mx-auto w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-cyan-100/50">
+      <div className="mx-auto w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-cyan-100/50">
         <div className="flex items-center gap-3">
           <div className="rounded-xl bg-cyan-100 p-2 text-cyan-700">
             <Activity className="h-5 w-5" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Patient Symptom Intake</h1>
-            <p className="text-sm text-slate-600">Enter clinical indicators for AI-assisted respiratory screening.</p>
+            <p className="text-sm text-slate-600">Submit respiratory screening data in the exact format expected by the backend API.</p>
           </div>
         </div>
 
@@ -78,24 +107,19 @@ export function PatientInputPage() {
               min="0"
               placeholder="e.g., 42"
               value={form.age}
-              onChange={(e) => {
-                setForm((prev) => ({ ...prev, age: e.target.value }));
-                if (error) {
-                  setError('');
-                }
-              }}
+              onChange={(e) => updateField('age', e.target.value)}
               className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200"
             />
           </div>
 
           <fieldset>
             <legend className="mb-3 text-sm font-semibold text-slate-700">Sex</legend>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {['male', 'female', 'unknown'].map((sex) => (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {sexOptions.map((option) => (
                 <label
-                  key={sex}
-                  className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm capitalize transition ${
-                    form.sex === sex
+                  key={option.value}
+                  className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
+                    form.sex === option.value
                       ? 'border-cyan-500 bg-cyan-50 text-cyan-800'
                       : 'border-slate-300 bg-white text-slate-700 hover:border-cyan-300'
                   }`}
@@ -103,43 +127,75 @@ export function PatientInputPage() {
                   <input
                     type="radio"
                     name="sex"
-                    value={sex}
-                    checked={form.sex === sex}
-                    onChange={(e) => {
-                      setForm((prev) => ({ ...prev, sex: e.target.value }));
-                      if (error) {
-                        setError('');
-                      }
-                    }}
+                    value={option.value}
+                    checked={form.sex === option.value}
+                    onChange={(e) => updateField('sex', e.target.value)}
                   />
-                  {sex}
+                  {option.label}
                 </label>
               ))}
             </div>
           </fieldset>
 
           <fieldset>
-            <legend className="mb-3 text-sm font-semibold text-slate-700">Symptoms</legend>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {symptomOptions.map((symptom) => (
+            <legend className="mb-3 text-sm font-semibold text-slate-700">Nature</legend>
+            <div className="grid gap-3 sm:grid-cols-4">
+              {natureOptions.map((option) => (
                 <label
-                  key={symptom}
+                  key={option.value}
                   className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
-                    form.symptoms.includes(symptom)
+                    form.nature === option.value
                       ? 'border-cyan-500 bg-cyan-50 text-cyan-800'
                       : 'border-slate-300 bg-white text-slate-700 hover:border-cyan-300'
                   }`}
                 >
                   <input
-                    type="checkbox"
-                    checked={form.symptoms.includes(symptom)}
-                    onChange={() => onSymptomToggle(symptom)}
+                    type="radio"
+                    name="nature"
+                    value={option.value}
+                    checked={form.nature === option.value}
+                    onChange={(e) => updateField('nature', e.target.value)}
                   />
-                  {symptom}
+                  {option.label}
                 </label>
               ))}
             </div>
           </fieldset>
+
+          <section className="grid gap-4 md:grid-cols-3">
+            {symptomFieldConfig.map((field) => (
+              <div key={field.id}>
+                <label htmlFor={field.id} className="mb-2 block text-sm font-semibold text-slate-700">
+                  {field.label}
+                </label>
+                <select
+                  id={field.id}
+                  value={form[field.id]}
+                  onChange={(e) => updateField(field.id, e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200"
+                >
+                  {symptomOptions.map((option) => (
+                    <option key={`${field.id}-${option.value}`} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </section>
+
+          <section className="rounded-xl border border-cyan-100 bg-cyan-50/70 p-4 text-sm text-slate-700">
+            <p className="font-semibold text-cyan-800">Backend Payload Preview</p>
+            <div className="mt-2 grid gap-2 md:grid-cols-2">
+              <p>Age group: {payloadPreview.age_group || 'N/A'}</p>
+              <p>Symptom count: {payloadPreview.symptom_count}</p>
+              <p>High risk: {payloadPreview.high_risk}</p>
+              <p>Nature: {payloadPreview.nature}</p>
+              <p className="md:col-span-2">
+                Symptom slots: {payloadPreview.symptom_1}, {payloadPreview.symptom_2}, {payloadPreview.symptom_3}
+              </p>
+            </div>
+          </section>
 
           {error ? <p className="text-sm font-semibold text-red-600">{error}</p> : null}
 
@@ -151,7 +207,7 @@ export function PatientInputPage() {
             {loading ? (
               <>
                 <LoaderCircle className="h-5 w-5 animate-spin" />
-                Processing clinical data...
+                Sending prediction request...
               </>
             ) : (
               'Analyze Symptoms'

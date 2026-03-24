@@ -1,8 +1,10 @@
-﻿import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { MedicalTriageDashboard } from './pages/doctor/MedicalTriageDashboard';
 import { PatientInputPage } from './pages/patient/PatientInputPage';
 import { PatientReportPage } from './pages/patient/PatientReportPage';
+
+const AUTH_STORAGE_KEY = 'triage-auth';
 
 function ProtectedRoute({ auth, allow, children }) {
   if (!auth.isAuthenticated) {
@@ -46,14 +48,31 @@ function LoginPage({ onLogin }) {
 
 function AppRoutes() {
   const navigate = useNavigate();
-  // TODO: Replace local auth state with backend session/token state.
-  const [auth, setAuth] = useState({
-    isAuthenticated: false,
-    role: null,
+  const [auth, setAuth] = useState(() => {
+    const savedAuth = window.sessionStorage.getItem(AUTH_STORAGE_KEY);
+
+    if (!savedAuth) {
+      return {
+        isAuthenticated: false,
+        role: null,
+      };
+    }
+
+    try {
+      return JSON.parse(savedAuth);
+    } catch {
+      return {
+        isAuthenticated: false,
+        role: null,
+      };
+    }
   });
 
+  useEffect(() => {
+    window.sessionStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(auth));
+  }, [auth]);
+
   const handleLogin = (role) => {
-    // TODO: Replace with POST /api/auth/login and role from API response.
     setAuth({ isAuthenticated: true, role });
 
     if (role === 'patient') {
