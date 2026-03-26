@@ -308,7 +308,7 @@ if __name__ == "__main__":
     # IMPROVEMENT: Model parameters provided for the high-performing refactor run.
     rf_model = RandomForestClassifier(
         n_estimators=700,
-        max_depth=30,
+        max_depth=35,
         min_samples_split=2,
         min_samples_leaf=1,
         max_features='sqrt',
