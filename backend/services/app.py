@@ -114,7 +114,7 @@ def validate_input(data):
         return f"Invalid value for sex: '{data['sex']}'."
     if data['nature'] not in data_process.nature:
         return f"Invalid value for nature: '{data['nature']}'."
-    if data['age_group'] not in data_process.age_groups:
+    if data['age_group'] not in data_process.age_gp:
         return f"Invalid value for age_group: '{data['age_group']}'."
     
     #Checking high_risk is 'yes' or 'no' explicitly
