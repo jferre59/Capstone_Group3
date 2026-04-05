@@ -56,3 +56,70 @@ def test_invalid_high_risk_value_returns_400(client):
         content_type='application/json'
     )
     assert response.status_code == 400
+
+
+#Test for invalid symptom value reteruns 400
+def test_invalid_symptom_returns_400(client):
+    payload = {**VALID_PAYLOAD, 'symptom_1': 'fake_symp_test'}
+
+    response = client.post(
+        '/predict',
+        data=json.dumps(payload),
+        content_type='application/json'
+    )
+    assert response.status_code == 400
+    assert 'symptom_1' in response.get_json()['error']
+
+
+#Test for symptom count out of range
+def test_symptom_count_out_of_range_returns_400(client):
+    payload = {**VALID_PAYLOAD, 'symptom_count': -1}
+
+    response = client.post(
+        '/predict',
+        data=json.dumps(payload),
+        content_type='application/json'
+    )
+    assert response.status_code == 400
+
+
+#Test for negative age value returns 400
+def test_negative_age_returns_400(client):
+    payload = {**VALID_PAYLOAD, 'age': -5}
+
+    response = client.post(
+        '/predict',
+        data=json.dumps(payload),
+        content_type='application/json'
+    )
+    assert response.status_code == 400
+
+
+#Test for non-json payload retruns 415
+def test_non_json_payload_returns_400(client):
+    response = client.post(
+        '/predict',
+        data="This is not JSON",
+        content_type='text/plain'
+    )
+    assert response.status_code == 415
+
+
+
+#Test for GET request to /predict returns 405
+def test_get_request_to_predict_returns_405(client):
+    response = client.get('/predict')
+    assert response.status_code == 405
+
+
+#Test for model exception handling returns 500
+def test_model_exception_handling_returns_500(client, illness_model):
+    illness_model.predict.side_effect = Exception("Model error")
+
+    response = client.post(
+        '/predict',
+        data=json.dumps(VALID_PAYLOAD),
+        content_type='application/json'
+    )
+    assert response.status_code == 500
+    assert 'Error' in response.get_json()
