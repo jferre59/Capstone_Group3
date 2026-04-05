@@ -12,3 +12,5 @@ __pycache__/
 .env
 backend/model/trained_model_v2_illness.joblib
 backend/model/trained_model_v2_illness.joblib
+backend/model/trained_model_v2_treat.joblib
+

@@ -1,0 +1,1 @@
+"""Script to configure test environment. Run before tests."""
