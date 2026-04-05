@@ -75,6 +75,64 @@ cols_2 = ['age', 'symptom_symptom_token_a cough that lasts more than three weeks
 
 app = Flask(__name__) #Create instance of flask app
 
+#VALIDATION BLOCK
+REQUIRED_FIELDS = ['age', 'symptom_1', 'symptom_2', 'symptom_3',
+                   'sex', 'nature', 'age_group', 'symptom_count', 'high_risk']
+
+def validate_input(data):
+
+    #Checking all required fields are present
+    missing_fields = [field for field in REQUIRED_FIELDS if field not in data]
+    if missing_fields:
+        return f"Missing required field(s): {', '.join(missing_fields)}"
+    
+    #Checking age is a positive integer
+    try:
+        age = float(data['age'])
+    except (TypeError, ValueError):
+        return "Age must be a numeric value."
+    if age < 0:
+        return "Age must be zero or greater."
+    
+    #Checking symptom count is a non-negative integer
+    try:
+        symptom_count = int(data['symptom_count'])
+    except (TypeError, ValueError):
+        return "Symptom count must be an integer."
+    if symptom_count < 0:
+        return "Symptom count must be zero or greater."
+    
+    #Check each symptom is NONE or known symptom
+    valid_symptoms = set(data_process.symptoms)
+    for field in ['symptom_1', 'symptom_2', 'symptom_3']:
+        symptom = data[field]
+        if symptom != "NONE" and symptom not in valid_symptoms:
+            return f"Invalid value for {field}: '{symptom}'."
+    
+    #Checking sex, nature, age-gp are known values
+    if data['sex'] not in data_process.gender:
+        return f"Invalid value for sex: '{data['sex']}'."
+    if data['nature'] not in data_process.nature:
+        return f"Invalid value for nature: '{data['nature']}'."
+    if data['age_group'] not in data_process.age_groups:
+        return f"Invalid value for age_group: '{data['age_group']}'."
+    
+    #Checking high_risk is 'yes' or 'no' explicitly
+    if not isinstance(data['high_risk'], str) or data['high_risk'] not in ('yes', 'no'):
+        return f"Invalid value for high_risk: '{data['high_risk']}'. Must be 'yes' or 'no'."
+    
+    return None #No validation errors, input is valid
+
+#VALIDATION BLOCK END
+
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*' 
+    response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type' 
+    return response
+
+
 # TESTING CODE
 # REASON: Adding a root path ('/') to confirm the server is running without getting a 404 error.
 @app.route('/')
@@ -85,16 +143,32 @@ def health_check():
     }), 200
 # END OF TESTING CODE
 
-@app.route('/predict', methods=['POST']) #Declare post route called predict to predict the data
+@app.route('/predict', methods=['POST', 'OPTIONS']) #Declare post route called predict to predict the data
 def add_item():
+
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
+    
     #Get JSON data from the request body
     data = request.get_json()
-    if data is None:
+    if not isinstance(data, dict):
         return jsonify({"error": "Invalid JSON"}), 400
+    
+    validation_error = validate_input(data)
+    if validation_error:
+        return jsonify({"error": validation_error}), 400
 
-    value_list = list(data.values()) 
-    if len(value_list) != 9:
-        return jsonify({"error": "Missing Fields"}), 400
+    value_list = [
+        float(data['age']),
+        data['symptom_1'],
+        data['symptom_2'],
+        data['symptom_3'],
+        data['sex'],
+        data['nature'],
+        data['age_group'],
+        int(data['symptom_count']),
+        data['high_risk']
+    ]
     
     numeric_values = data_process.data_processing(value_list) #Converts human readable string information into numeric data the model expects
         
