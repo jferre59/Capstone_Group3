@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AlertCircle, ArrowLeft, CheckCircle2, FileWarning, ThermometerSun } from 'lucide-react';
-
+import Navbar from '../../components/Navbar'; // ADDED: Import the shared Navbar component
 const REPORT_STORAGE_KEY = 'latest-patient-report';
 
 export function PatientReportPage() {
@@ -31,6 +31,10 @@ export function PatientReportPage() {
   );
 
   return (
+     // ADDED: Wrapped in Fragment so Navbar sits above the page content
+        <>
+          {/* ADDED: Navbar renders at the very top of the page */}
+          <Navbar />
     <div className="min-h-screen bg-gradient-to-b from-cyan-50 via-slate-50 to-white px-4 py-10 pb-24">
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <div className="flex items-center justify-between gap-4">
@@ -145,5 +149,6 @@ export function PatientReportPage() {
         This AI result is for reference only and does not replace professional medical advice.
       </div>
     </div>
+    </> // ADDED: Closing fragment tag
   );
 }

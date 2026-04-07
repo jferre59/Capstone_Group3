@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { AlertTriangle, ClipboardCheck, Search, ShieldAlert, Stethoscope } from 'lucide-react';
 import { mockPatients } from '../../mocks/mockPatients';
+import Navbar from '../../components/Navbar'; // ADDED: Import the shared Navbar component
+
 
 const urgencyRank = {
   Critical: 0,
@@ -66,6 +68,10 @@ export function MedicalTriageDashboard() {
   };
 
   return (
+    //  ADDED: Wrapped everything in a Fragment (<>) so we can place Navbar above the page content
+    <>
+      {/*  ADDED: Navbar renders at the very top, above all page content */}
+      <Navbar />
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(248,113,113,0.12),_transparent_35%),linear-gradient(180deg,#f8fafc_0%,#ffffff_100%)] px-4 py-10">
       <div className="mx-auto w-full max-w-7xl space-y-6">
         <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200/60 lg:flex-row lg:items-end lg:justify-between">
@@ -268,5 +274,6 @@ export function MedicalTriageDashboard() {
         </div>
       </div>
     </div>
+     </> // ADDED: Closing fragment tag
   );
 }

@@ -8,6 +8,7 @@ import {
   sexOptions,
   symptomOptions,
 } from '../../lib/prediction';
+import Navbar from '../../components/Navbar'; // ADDED: Import the shared Navbar component
 
 const REPORT_STORAGE_KEY = 'latest-patient-report';
 
@@ -84,6 +85,10 @@ export function PatientInputPage() {
   };
 
   return (
+    // ADDED: Wrapped in Fragment so Navbar sits above the page content
+    <>
+      {/* ADDED: Navbar renders at the very top of the page */}
+      <Navbar />
     <div className="min-h-screen bg-gradient-to-b from-cyan-50 via-slate-50 to-white px-4 py-10">
       <div className="mx-auto w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-8 shadow-xl shadow-cyan-100/50">
         <div className="flex items-center gap-3">
@@ -216,5 +221,6 @@ export function PatientInputPage() {
         </form>
       </div>
     </div>
+    </> // ADDED: Closing fragment tag
   );
 }
