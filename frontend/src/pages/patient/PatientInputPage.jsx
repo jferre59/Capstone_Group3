@@ -14,8 +14,6 @@ const REPORT_STORAGE_KEY = 'latest-patient-report';
 
 const symptomFieldConfig = [
   { id: 'symptom_1', label: 'Primary symptom' },
-  { id: 'symptom_2', label: 'Secondary symptom' },
-  { id: 'symptom_3', label: 'Additional symptom' },
 ];
 
 export function PatientInputPage() {
@@ -25,8 +23,6 @@ export function PatientInputPage() {
     sex: '',
     nature: 'unknown',
     symptom_1: 'NONE',
-    symptom_2: 'NONE',
-    symptom_3: 'NONE',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -57,7 +53,7 @@ export function PatientInputPage() {
     event.preventDefault();
 
     if (!canSubmit) {
-      setError('Enter age, sex, nature, and choose at least one symptom.');
+      setError('Enter age, sex, nature, and choose a symptom.');
       return;
     }
 

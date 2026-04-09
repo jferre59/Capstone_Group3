@@ -17,8 +17,6 @@ loaded_model_2 = joblib.load('backend/model/trained_model_v2_treat.joblib')
 REQUIRED_FIELDS = [
     'age',
     'symptom_1',
-    'symptom_2',
-    'symptom_3',
     'sex',
     'nature',
     'age_group',
@@ -113,7 +111,7 @@ def validate_predict_payload(data):
     if symptom_count < 0 or symptom_count > 3:
         return "symptom_count must be between 0 and 3."
 
-    symptom_fields = ['symptom_1', 'symptom_2', 'symptom_3']
+    symptom_fields = ['symptom_1']
     valid_symptoms = set(data_process.symptoms)
     for field in symptom_fields:
         value = data[field]
@@ -161,8 +159,6 @@ def add_item():
     value_list = [
         float(data['age']),
         data['symptom_1'],
-        data['symptom_2'],
-        data['symptom_3'],
         data['sex'],
         data['nature'],
         data['age_group'],

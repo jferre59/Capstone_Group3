@@ -89,7 +89,7 @@ loaded_scaler = joblib.load(output_model)
 
 def data_processing(data):
     output = []
-    scale = np.array([[data[0], data[7]]])
+    scale = np.array([[data[0], data[5]]])
     scaled = loaded_scaler.transform(scale) #Scales age and symptom count for use in data
 
 
@@ -103,34 +103,26 @@ def data_processing(data):
         l = symptoms.index(data[1])
         symp[l] = 1
 
-    if data[2] != "NONE":
-        l = symptoms.index(data[2])
-        symp[l] = 1
-
-    if data[3] != "NONE":
-        l = symptoms.index(data[3])
-        symp[l] = 1
-
     output.extend(symp)
 
     sex = [0,0,0,0]
-    i = gender.index(data[4])
+    i = gender.index(data[2])
     sex[i] = 1
     output.extend(sex)
 
     nature_bin = [0,0,0,0]
-    x = nature.index(data[5])
+    x = nature.index(data[3])
     nature_bin[x] = 1
     output.extend(nature_bin)
 
     age_group = [0,0,0,0,0]
-    z = age_gp.index(data[6])
+    z = age_gp.index(data[4])
     age_group[z] = 1
     output.extend(age_group)
 
     output.append(scaled[0][1].item())
 
-    if data[8] == 'yes':
+    if data[6] == 'yes':
         output.append(1)
     else:
         output.append(0)

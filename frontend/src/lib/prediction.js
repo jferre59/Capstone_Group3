@@ -124,7 +124,7 @@ export function deriveHighRisk(ageValue, nature) {
 }
 
 export function getSelectedSymptoms(form) {
-  return [form.symptom_1, form.symptom_2, form.symptom_3].filter((value) => value && value !== 'NONE');
+  return [form.symptom_1].filter((value) => value && value !== 'NONE');
 }
 
 export function buildPredictionPayload(form) {
@@ -133,8 +133,6 @@ export function buildPredictionPayload(form) {
   return {
     age: Number(form.age),
     symptom_1: form.symptom_1 || 'NONE',
-    symptom_2: form.symptom_2 || 'NONE',
-    symptom_3: form.symptom_3 || 'NONE',
     sex: form.sex,
     nature: form.nature,
     age_group: deriveAgeGroup(form.age),
