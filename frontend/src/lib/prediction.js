@@ -136,7 +136,6 @@ export function buildPredictionPayload(form) {
     sex: form.sex,
     nature: form.nature,
     age_group: deriveAgeGroup(form.age),
-    symptom_count: selectedSymptoms.length,
     high_risk: deriveHighRisk(form.age, form.nature),
   };
 }

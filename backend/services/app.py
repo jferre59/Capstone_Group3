@@ -20,7 +20,6 @@ REQUIRED_FIELDS = [
     'sex',
     'nature',
     'age_group',
-    'symptom_count',
     'high_risk',
 ]
 
@@ -101,15 +100,11 @@ def validate_predict_payload(data):
 
     try:
         age = float(data['age'])
-        symptom_count = int(data['symptom_count'])
     except (TypeError, ValueError):
-        return "Age and symptom_count must be numeric values."
+        return "Age must be a numeric value."
 
     if age < 0:
         return "Age must be zero or greater."
-
-    if symptom_count < 0 or symptom_count > 3:
-        return "symptom_count must be between 0 and 3."
 
     symptom_fields = ['symptom_1']
     valid_symptoms = set(data_process.symptoms)
@@ -162,12 +157,10 @@ def add_item():
         data['sex'],
         data['nature'],
         data['age_group'],
-        int(data['symptom_count']),
         data['high_risk'],
     ]
     
     numeric_values = data_process.data_processing(value_list) #Converts human readable string information into numeric data the model expects
-        
     pred_arr = np.array([numeric_values]) #Convert the list into an array of one element that contains all values
 
     df_pred = pd.DataFrame(data=pred_arr, columns=cols)

@@ -88,8 +88,12 @@ os.makedirs(os.path.dirname(output_model), exist_ok=True)
 loaded_scaler = joblib.load(output_model)
 
 def data_processing(data):
+
+
+    s_count = len([s.strip() for s in str(data[1]).split(',')])
+
     output = []
-    scale = np.array([[data[0], data[5]]])
+    scale = np.array([[data[0], s_count]])
     scaled = loaded_scaler.transform(scale) #Scales age and symptom count for use in data
 
 
@@ -122,7 +126,7 @@ def data_processing(data):
 
     output.append(scaled[0][1].item())
 
-    if data[6] == 'yes':
+    if data[5] == 'yes':
         output.append(1)
     else:
         output.append(0)

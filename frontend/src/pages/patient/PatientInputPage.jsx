@@ -37,10 +37,9 @@ export function PatientInputPage() {
       !Number.isNaN(age) &&
       age >= 0 &&
       form.sex !== '' &&
-      form.nature !== '' &&
-      payloadPreview.symptom_count > 0
+      form.nature !== ''
     );
-  }, [form, payloadPreview.symptom_count]);
+  }, [form]);
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -189,11 +188,10 @@ export function PatientInputPage() {
             <p className="font-semibold text-cyan-800">Backend Payload Preview</p>
             <div className="mt-2 grid gap-2 md:grid-cols-2">
               <p>Age group: {payloadPreview.age_group || 'N/A'}</p>
-              <p>Symptom count: {payloadPreview.symptom_count}</p>
               <p>High risk: {payloadPreview.high_risk}</p>
               <p>Nature: {payloadPreview.nature}</p>
               <p className="md:col-span-2">
-                Symptom slots: {payloadPreview.symptom_1}, {payloadPreview.symptom_2}, {payloadPreview.symptom_3}
+                Symptom: {payloadPreview.symptom_1}
               </p>
             </div>
           </section>

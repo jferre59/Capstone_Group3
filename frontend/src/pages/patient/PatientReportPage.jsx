@@ -115,9 +115,8 @@ export function PatientReportPage() {
                   <li>Age: {payload.age}</li>
                   <li>Age group: {payload.age_group}</li>
                   <li>Nature: {payload.nature}</li>
-                  <li>Symptom count: {payload.symptom_count}</li>
                   <li>High risk: {payload.high_risk}</li>
-                  <li>Symptom slots: {payload.symptom_1}, {payload.symptom_2}, {payload.symptom_3}</li>
+                  <li>Symptom: {payload.symptom_1}</li>
                 </ul>
               ) : (
                 <p className="mt-2">No payload metadata available.</p>
