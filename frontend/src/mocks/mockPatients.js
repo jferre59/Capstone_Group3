@@ -10,7 +10,7 @@
   },
   {
     id: 'PT-2026-002',
-    name: 'Name2',
+    name: 'Adam',
     age: 53,
     symptoms: ['Wheezing', 'Persistent cough'],
     predictedCondition: 'COPD Exacerbation',
@@ -19,7 +19,7 @@
   },
   {
     id: 'PT-2026-003',
-    name: 'Name3',
+    name: 'Sarah',
     age: 33,
     symptoms: ['Cough', 'Fever'],
     predictedCondition: 'Acute Bronchitis',
@@ -28,7 +28,7 @@
   },
   {
     id: 'PT-2026-004',
-    name: 'Name4',
+    name: 'John',
     age: 19,
     symptoms: ['Runny nose', 'Sore throat'],
     predictedCondition: 'Upper Respiratory Infection',
@@ -37,7 +37,7 @@
   },
   {
     id: 'PT-2026-005',
-    name: 'Name5',
+    name: 'Michael',
     age: 67,
     symptoms: ['Shortness of breath', 'Fatigue', 'Rapid breathing'],
     predictedCondition: 'Pulmonary Hypertension',
